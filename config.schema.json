@@ -1,0 +1,84 @@
+{
+  "pluginAlias": "MQTT-Bridge",
+  "pluginType": "platform",
+  "singular": true,
+  "headerDisplay": "This plugin bridges Homebridge devices to MQTT, publishing device status and accepting commands via MQTT topics.",
+  "footerDisplay": "For help and examples, see the [README](https://github.com/skullydazed/homebridge2mqtt).",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "default": "MQTT Bridge",
+        "required": true
+      },
+      "mqttUrl": {
+        "title": "MQTT Broker URL",
+        "type": "string",
+        "default": "mqtt://localhost:1883",
+        "required": true,
+        "description": "The URL of your MQTT broker (e.g., mqtt://localhost:1883 or mqtts://broker.example.com:8883)"
+      },
+      "mqttTopic": {
+        "title": "MQTT Topic Prefix",
+        "type": "string",
+        "default": "homebridge",
+        "required": false,
+        "description": "The base topic prefix for all MQTT messages (default: homebridge)"
+      },
+      "mqttUsername": {
+        "title": "MQTT Username",
+        "type": "string",
+        "required": false,
+        "description": "Username for MQTT broker authentication (optional)"
+      },
+      "mqttPassword": {
+        "title": "MQTT Password",
+        "type": "string",
+        "required": false,
+        "description": "Password for MQTT broker authentication (optional)"
+      },
+      "mqttClientId": {
+        "title": "MQTT Client ID",
+        "type": "string",
+        "default": "homebridge-mqtt-bridge",
+        "required": false,
+        "description": "Unique client ID for the MQTT connection (default: homebridge-mqtt-bridge)"
+      }
+    }
+  },
+  "layout": [
+    {
+      "type": "flex",
+      "flex-flow": "row wrap",
+      "items": [
+        {
+          "type": "flex",
+          "flex-flow": "column",
+          "items": ["name"]
+        }
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "MQTT Broker Settings",
+      "expandable": false,
+      "items": [
+        "mqttUrl",
+        "mqttTopic",
+        "mqttClientId"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "MQTT Authentication",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "mqttUsername",
+        "mqttPassword"
+      ]
+    }
+  ]
+}

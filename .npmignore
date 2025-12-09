@@ -1,0 +1,38 @@
+# Development files
+.git
+.gitignore
+.github
+
+# Documentation (keep in package)
+# README.md
+# LICENSE
+# CHANGELOG.md
+
+# Example files (keep in package)
+# config.example.json
+
+# Test files
+test/
+tests/
+*.test.js
+*.spec.js
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Logs
+*.log
+npm-debug.log*
