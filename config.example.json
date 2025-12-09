@@ -1,0 +1,21 @@
+{
+  "bridge": {
+    "name": "Homebridge",
+    "username": "CC:22:3D:E3:CE:30",
+    "port": 51826,
+    "pin": "031-45-154"
+  },
+  "description": "Example Homebridge configuration with MQTT Bridge plugin",
+  "platforms": [
+    {
+      "platform": "MQTT-Bridge",
+      "name": "MQTT Bridge",
+      "mqttUrl": "mqtt://localhost:1883",
+      "mqttTopic": "homebridge",
+      "mqttUsername": "",
+      "mqttPassword": "",
+      "mqttClientId": "homebridge-mqtt-bridge"
+    }
+  ],
+  "accessories": []
+}
