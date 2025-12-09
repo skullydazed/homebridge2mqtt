@@ -83,12 +83,30 @@ class MQTTBridgePlatform {
 
   handleMQTTMessage(topic, message) {
     try {
-      const parts = topic.split('/');
-      if (parts.length < 4 || parts[1] !== 'set') return;
+      // Parse topic: {mqttTopic}/set/{accessoryName}/{characteristic}
+      const topicPrefix = `${this.mqttTopic}/set/`;
+      if (!topic.startsWith(topicPrefix)) return;
 
-      const accessoryName = parts[2];
-      const characteristic = parts[3];
-      const value = JSON.parse(message.toString());
+      const remainder = topic.substring(topicPrefix.length);
+      const parts = remainder.split('/');
+      
+      if (parts.length < 2) {
+        this.log.warn(`Invalid topic format: ${topic}`);
+        return;
+      }
+
+      const accessoryName = parts[0];
+      const characteristic = parts[1];
+      
+      // Parse and validate message
+      let value;
+      try {
+        const messageStr = message.toString();
+        value = JSON.parse(messageStr);
+      } catch (parseError) {
+        this.log.error(`Invalid JSON in message: ${message.toString()}`);
+        return;
+      }
 
       this.log.info(`Received command for ${accessoryName}/${characteristic}: ${value}`);
 
@@ -105,7 +123,6 @@ class MQTTBridgePlatform {
   }
 
   updateAccessoryCharacteristic(accessory, characteristicName, value) {
-    const context = accessory.context;
     const service = accessory.getService(Service.Switch) || accessory.getService(Service.Lightbulb);
     
     if (!service) {
@@ -117,10 +134,14 @@ class MQTTBridgePlatform {
     switch (characteristicName.toLowerCase()) {
       case 'on':
       case 'power':
-        characteristic = service.getCharacteristic(Characteristic.On);
+        if (service.testCharacteristic(Characteristic.On)) {
+          characteristic = service.getCharacteristic(Characteristic.On);
+        }
         break;
       case 'brightness':
-        characteristic = service.getCharacteristic(Characteristic.Brightness);
+        if (service.testCharacteristic(Characteristic.Brightness)) {
+          characteristic = service.getCharacteristic(Characteristic.Brightness);
+        }
         break;
       default:
         this.log.warn(`Unknown characteristic: ${characteristicName}`);
@@ -130,6 +151,8 @@ class MQTTBridgePlatform {
     if (characteristic) {
       characteristic.updateValue(value);
       this.log.info(`Updated ${accessory.displayName} ${characteristicName} to ${value}`);
+    } else {
+      this.log.warn(`Characteristic ${characteristicName} not supported by ${accessory.displayName}`);
     }
   }
 
@@ -181,20 +204,22 @@ class MQTTBridgePlatform {
     }
 
     // Set up brightness if available
-    const brightnessCharacteristic = service.getCharacteristic(Characteristic.Brightness);
-    if (brightnessCharacteristic) {
-      brightnessCharacteristic.on('get', (callback) => {
-        const value = brightnessCharacteristic.value;
-        callback(null, value);
-      });
+    if (service.testCharacteristic(Characteristic.Brightness)) {
+      const brightnessCharacteristic = service.getCharacteristic(Characteristic.Brightness);
+      if (brightnessCharacteristic) {
+        brightnessCharacteristic.on('get', (callback) => {
+          const value = brightnessCharacteristic.value;
+          callback(null, value);
+        });
 
-      brightnessCharacteristic.on('set', (value, callback) => {
-        this.publishStatus(accessory, 'Brightness', value);
-        callback(null);
-      });
+        brightnessCharacteristic.on('set', (value, callback) => {
+          this.publishStatus(accessory, 'Brightness', value);
+          callback(null);
+        });
 
-      // Publish initial state
-      this.publishStatus(accessory, 'Brightness', brightnessCharacteristic.value || 0);
+        // Publish initial state
+        this.publishStatus(accessory, 'Brightness', brightnessCharacteristic.value || 0);
+      }
     }
   }
 
